@@ -1,0 +1,13 @@
+package com.aungmaw.golunch;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class GolunchApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
