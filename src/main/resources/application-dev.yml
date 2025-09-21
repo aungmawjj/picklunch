@@ -1,10 +1,10 @@
 spring:
-  application:
-    name: Go Lunch
+  jpa:
+    properties.hibernate.format_sql: true
 
 logging:
   level:
-    root: "info"
+    root: "debug"
 
 webapp:
   static:

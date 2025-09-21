@@ -8,14 +8,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${webapp.static.dir:webapp/dist/webapp/browser}")
+    @Value("${webapp.static.dir}")
     private String webappStaticDir;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
                 .addResourceLocations("file:" + webappStaticDir);
-
     }
 
 }
