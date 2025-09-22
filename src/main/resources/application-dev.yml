@@ -4,8 +4,7 @@ spring:
 
 logging:
   level:
-    root: "debug"
-
-webapp:
-  static:
-    dir: webapp/dist/webapp/browser/
+    golunch: "debug"
+    org.springframework.security: "debug"
+    org.springframework.web: "debug"
+    org.hibernate: "debug"

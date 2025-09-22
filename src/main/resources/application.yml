@@ -2,10 +2,23 @@ spring:
   application:
     name: Go Lunch
 
+springdoc:
+  swagger-ui:
+    csrf:
+      enabled: true
+
 logging:
   level:
     root: "info"
 
-webapp:
-  static:
-    dir: webapp/dist/webapp/browser/
+server:
+  servlet:
+    session:
+      timeout: 30m
+
+golunch:
+  picker:
+    wait-time: 30m
+  webapp:
+    static:
+      dir: webapp/dist/webapp/browser/

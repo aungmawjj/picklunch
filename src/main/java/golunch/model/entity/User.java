@@ -1,0 +1,35 @@
+package golunch.model.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.ZonedDateTime;
+
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "app_user", indexes = @Index(name = "index_username", columnList = "username", unique = true))
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String username;
+
+    private String encodedPassword;
+
+    private String displayName;
+
+    @CreatedDate
+    private ZonedDateTime createdAt;
+
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Lunch decider app for teams">
+    <meta name="author" content="Aung Maw">
+    <title>Go Lunch Login</title>
+    <style>
+        body {
+            font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f1f1f1;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        h2 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 500;
+            line-height: 2rem;
+        }
+
+        .content {
+            display: flex;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        form {
+            width: 320px;
+            padding: 24px;
+            box-sizing: border-box;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border-radius: 0.5rem;
+        }
+
+        @media (min-width: 800px) {
+            form {
+                width: 460px;
+                padding: 40px;
+            }
+        }
+
+        input {
+            height: auto;
+            width: 100%;
+            font-size: 1rem;
+            padding: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border: none;
+            border-radius: 0.2rem;
+            width: 100%;
+            cursor: pointer;
+            color: #fff;
+            background-color: #06f;
+            margin-top: 1rem;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            border-radius: 0.1rem;
+            width: 100%;
+            box-sizing: border-box;
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .alert.alert-danger {
+            color: #6b1922;
+            background-color: #f7d5d7;
+            border-color: #eab6bb;
+        }
+
+        .alert.alert-success {
+            color: #145222;
+            background-color: #d1f0d9;
+            border-color: #c2ebcb;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="content">
+    <form th:action="@{/login}" method="post">
+        <h2>Go Lunch</h2>
+        <div th:if="${param.error}" class="alert alert-danger">
+            Invalid username and password.
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success">
+            You have been logged out.
+        </div>
+        <p>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required autofocus/>
+        </p>
+        <p>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required/>
+        </p>
+        <button type="submit" class="primary">Sign In</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
-package com.aungmaw.golunch.controller;
+package golunch.controller;
 
-import com.aungmaw.golunch.model.HealthResponse;
+import golunch.model.HealthResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
