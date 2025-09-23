@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/lunch-picker")
 @Tag(name = "Lunch Picker")
-
 public class LunchPickerController {
 
     @Autowired
@@ -35,12 +34,6 @@ public class LunchPickerController {
             summary = "Create a new lunch picker",
             description = "Default wait time is 30 minutes"
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "400", description = "Bad Request",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
-    })
     public LunchPicker createLunchPicker(@Validated @RequestBody CreateLunchPickerRequest request) {
         return lunchPickerService.createLunchPicker(request);
     }
@@ -82,12 +75,6 @@ public class LunchPickerController {
             summary = "Pick a random lunch option",
             description = "Can pick only once after all users have submitted or wait time is over"
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "400", description = "Bad Request",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
-    })
     public LunchPicker pickLunchOption(
             @Validated @RequestBody PickLunchOptionRequest request,
             Authentication authentication
