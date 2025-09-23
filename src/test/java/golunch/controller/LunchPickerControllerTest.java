@@ -12,7 +12,7 @@ import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -52,8 +52,12 @@ class LunchPickerControllerTest {
 
     @Test
     @WithMockUser
-    void testGetEmptyLunchPickers() throws Exception {
-        when(lunchPickerService.getLunchPickers(any())).thenReturn(Page.empty());
+    void testListLunchPickers() throws Exception {
+        List<LunchPicker> lunchPickers = List.of(
+                LunchPicker.builder().id(1L).build(),
+                LunchPicker.builder().id(2L).build()
+        );
+        when(lunchPickerService.getLunchPickers(any())).thenReturn(new PageImpl<>(lunchPickers));
 
         MvcResult result = mockMvc.perform(get("/api/lunch-picker"))
                 .andExpect(status().isOk())
@@ -61,12 +65,27 @@ class LunchPickerControllerTest {
                 .andReturn();
 
         String respBody = result.getResponse().getContentAsString();
-        PagedLunchPickers lunchPickers = objectMapper.readValue(respBody, PagedLunchPickers.class);
+        PagedLunchPickers pagedLunchPickers = objectMapper.readValue(respBody, PagedLunchPickers.class);
 
-        assertEquals(0, lunchPickers.content.size());
-        assertEquals(0, lunchPickers.page.totalElements);
-        assertEquals(0, lunchPickers.page.totalPages, 1);
-        assertEquals(0, lunchPickers.page.number);
+        assertEquals(lunchPickers.size(), pagedLunchPickers.page.totalElements);
+        assertEquals(lunchPickers, pagedLunchPickers.content);
+    }
+
+    @Test
+    @WithMockUser
+    void testGetLunchPickers() throws Exception {
+        LunchPicker lunchPicker = LunchPicker.builder().id(1L).build();
+        when(lunchPickerService.getLunchPickerById(lunchPicker.getId())).thenReturn(lunchPicker);
+
+        MvcResult result = mockMvc.perform(get("/api/lunch-picker/" + lunchPicker.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String respBody = result.getResponse().getContentAsString();
+        LunchPicker lunchPicker1 = objectMapper.readValue(respBody, LunchPicker.class);
+
+        assertEquals(lunchPicker, lunchPicker1);
     }
 
     @Test
@@ -131,9 +150,9 @@ class LunchPickerControllerTest {
                 .andReturn();
 
         String respBody = result.getResponse().getContentAsString();
-        LunchPicker lunchPickers = objectMapper.readValue(respBody, LunchPicker.class);
+        LunchPicker lunchPicker1 = objectMapper.readValue(respBody, LunchPicker.class);
 
-        assertNotNull(lunchPickers);
+        assertNotNull(lunchPicker1);
     }
 
 
@@ -154,15 +173,15 @@ class LunchPickerControllerTest {
                 .andReturn();
 
         String respBody = result.getResponse().getContentAsString();
-        LunchPicker lunchPickers = objectMapper.readValue(respBody, LunchPicker.class);
+        LunchPicker lunchPicker1 = objectMapper.readValue(respBody, LunchPicker.class);
 
-        assertNotNull(lunchPickers);
+        assertNotNull(lunchPicker1);
     }
 
 
     @Data
     static class PagedLunchPickers {
-        List<?> content;
+        List<LunchPicker> content;
         PageInfo page;
 
         @Data

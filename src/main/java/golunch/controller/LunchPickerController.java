@@ -53,6 +53,12 @@ public class LunchPickerController {
         return lunchPickerService.getLunchPickers(pageable);
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Get lunch picker by id")
+    public LunchPicker getLunchPickers(@PathVariable Long id) {
+        return lunchPickerService.getLunchPickerById(id);
+    }
+
     @PostMapping("/option")
     @Operation(
             summary = "Submit lunch option",

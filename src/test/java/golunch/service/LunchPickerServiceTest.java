@@ -67,6 +67,13 @@ public class LunchPickerServiceTest {
     }
 
     @Test
+    void testCanGetLunchPickerById() {
+        LunchPicker lunchPicker = createDefaultLunchPicker();
+        LunchPicker lunchPicker1 = lunchPickerService.getLunchPickerById(lunchPicker.getId());
+        assertEquals(lunchPicker.getId(), lunchPicker1.getId());
+    }
+
+    @Test
     void testCanListLunchPicker() {
         createDefaultLunchPicker();
         Page<LunchPicker> lunchPickers = lunchPickerService.getLunchPickers(PageRequest.of(0, 10));
@@ -142,8 +149,8 @@ public class LunchPickerServiceTest {
 
         Thread.sleep(100); // sleep for wait time over
 
-        Page<LunchPicker> lunchPickers = lunchPickerService.getLunchPickers(PageRequest.of(0, 10));
-        assertEquals(LunchPicker.State.READY_TO_PICK, lunchPickers.getContent().get(0).getState());
+        lunchPicker = lunchPickerService.getLunchPickerById(lunchPicker.getId());
+        assertEquals(LunchPicker.State.READY_TO_PICK, lunchPicker.getState());
     }
 
     @Test

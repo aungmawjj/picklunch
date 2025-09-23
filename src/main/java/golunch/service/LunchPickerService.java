@@ -18,4 +18,6 @@ public interface LunchPickerService {
 
     Page<LunchPicker> getLunchPickers(Pageable pageable);
 
+    LunchPicker getLunchPickerById(Long id);
+
 }

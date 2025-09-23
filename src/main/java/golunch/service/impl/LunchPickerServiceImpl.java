@@ -70,15 +70,23 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public LunchPicker getLunchPickerById(Long id) {
+        LunchPicker lunchPicker = getLunchPickerByIdOrElseThrow(id);
+        this.updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
+        return lunchPicker;
+    }
+
+    @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public LunchPicker submitLunchOption(SubmitLunchOptionRequest request, String username) {
         log.info("Submitting lunch option");
-        LunchPicker lunchPicker = getLunchPickerById(request.getLunchPickerId());
+        LunchPicker lunchPicker = getLunchPickerByIdOrElseThrow(request.getLunchPickerId());
 
         ensureNotPicked(lunchPicker);
 
         LunchOption lunchOption = getOrAddLunchOption(lunchPicker, username);
-        lunchOption.setUsername(username);
+        lunchOption.setSubmittedUsername(username);
         lunchOption.setShopName(request.getShopName());
         lunchOption.setShopUrl(request.getShopUrl());
 
@@ -87,6 +95,10 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         }
 
         lunchPicker = lunchPickerRepo.save(lunchPicker);
+
+        if (lunchOption.getSubmitter() == null) {
+            lunchOption.setSubmitter(userRepo.findByUsername(username));
+        }
 
         log.info("Submitted lunch option, picker_state={}", lunchPicker.getState());
         return lunchPicker;
@@ -98,16 +110,11 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         }
     }
 
-    private LunchPicker getLunchPickerById(Long id) {
-        return lunchPickerRepo.findById(id)
-                .orElseThrow(() -> new GoLunchException("Lunch picker not found"));
-    }
-
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public LunchPicker pickLunchOption(PickLunchOptionRequest request, String username) {
         log.info("Picking lunch option");
-        LunchPicker lunchPicker = getLunchPickerById(request.getLunchPickerId());
+        LunchPicker lunchPicker = getLunchPickerByIdOrElseThrow(request.getLunchPickerId());
 
         ensureNotPicked(lunchPicker);
         updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
@@ -131,12 +138,17 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         return lunchPicker;
     }
 
+    private LunchPicker getLunchPickerByIdOrElseThrow(Long id) {
+        return lunchPickerRepo.findById(id)
+                .orElseThrow(() -> new GoLunchException("Lunch picker not found"));
+    }
+
     private LunchOption getOrAddLunchOption(LunchPicker lunchPicker, String username) {
         if (lunchPicker.getLunchOptions() == null) {
             lunchPicker.setLunchOptions(new ArrayList<>());
         }
         LunchOption lunchOption = lunchPicker.getLunchOptions().stream()
-                .filter(option -> username.equals(option.getUsername()))
+                .filter(option -> username.equals(option.getSubmittedUsername()))
                 .findFirst().orElse(new LunchOption());
 
         if (lunchOption.getId() == null) {

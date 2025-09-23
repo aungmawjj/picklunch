@@ -17,8 +17,10 @@ server:
       timeout: 30m
 
 golunch:
+  files:
+    users: users.csv
   picker:
-    wait-time: 30m
+    wait-time: 10m
   webapp:
     static:
       dir: webapp/dist/webapp/browser/

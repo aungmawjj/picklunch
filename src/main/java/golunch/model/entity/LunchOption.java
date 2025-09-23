@@ -1,7 +1,10 @@
 package golunch.model.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,8 +26,17 @@ public class LunchOption {
     private Long id;
 
     // having separate field to decouple from audit field
-    @Column(nullable = false)
-    private String username;
+    @Column(name = "submitted_username", nullable = false)
+    private String submittedUsername;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "submitted_username",
+            referencedColumnName = "username",
+            insertable = false,
+            updatable = false
+    )
+    private User submitter;
 
     @Column(nullable = false)
     private String shopName;
