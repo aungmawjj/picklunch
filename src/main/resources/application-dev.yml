@@ -4,7 +4,7 @@ spring:
 
 logging:
   level:
-    golunch: "debug"
+    picklunch: "debug"
     org.springframework.security: "debug"
     org.springframework.web: "debug"
     org.hibernate: "debug"

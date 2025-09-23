@@ -16,7 +16,7 @@ server:
     session:
       timeout: 30m
 
-golunch:
+picklunch:
   files:
     users: users.csv
   picker:

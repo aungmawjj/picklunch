@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Lunch decider app for teams">
     <meta name="author" content="Aung Maw">
-    <title>Go Lunch Login</title>
+    <title>Pick Lunch Login</title>
     <style>
         body {
             font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -95,7 +95,7 @@
 <body>
 <div class="content">
     <form th:action="@{/login}" method="post">
-        <h2>Go Lunch</h2>
+        <h2>Pick Lunch</h2>
         <div th:if="${param.error}" class="alert alert-danger">
             Invalid username and password.
         </div>
