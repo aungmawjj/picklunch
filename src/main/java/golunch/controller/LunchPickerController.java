@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,7 +41,7 @@ public class LunchPickerController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    public LunchPicker createLunchPicker(@RequestBody CreateLunchPickerRequest request) {
+    public LunchPicker createLunchPicker(@Validated @RequestBody CreateLunchPickerRequest request) {
         return lunchPickerService.createLunchPicker(request);
     }
 
@@ -64,7 +65,7 @@ public class LunchPickerController {
             )
     })
     public LunchPicker submitLunchOption(
-            @RequestBody SubmitLunchOptionRequest request,
+            @Validated @RequestBody SubmitLunchOptionRequest request,
             Authentication authentication
     ) {
         return lunchPickerService.submitLunchOption(request, authentication.getName());
@@ -82,7 +83,7 @@ public class LunchPickerController {
             )
     })
     public LunchPicker pickLunchOption(
-            @RequestBody PickLunchOptionRequest request,
+            @Validated @RequestBody PickLunchOptionRequest request,
             Authentication authentication
     ) {
         return lunchPickerService.pickLunchOption(request, authentication.getName());

@@ -47,7 +47,8 @@ public class LunchPickerServiceImpl implements LunchPickerService {
             // for now, allow only one active lunch picker
             throw new GoLunchException("Active lunch picker exists");
         }
-        Duration waitTime = ObjectUtils.defaultIfNull(request.getWaitTime(), defaultWaitTime);
+
+        Duration waitTime = ObjectUtils.getIfNull(request.getWaitTime(), defaultWaitTime);
         LunchPicker lunchPicker = LunchPicker.builder()
                 .state(LunchPicker.State.SUBMITTING)
                 .startTime(ZonedDateTime.now())
@@ -61,16 +62,11 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<LunchPicker> getLunchPickers(Pageable pageable) {
         Page<LunchPicker> lunchPickers = lunchPickerRepo.findAll(pageable);
-        lunchPickers.forEach(this::changeStateToReadyToPickIfRequired);
+        lunchPickers.forEach(this::updateStateIfWaitTimeOverWithSomeOptions);
         return lunchPickers;
-    }
-
-    private void changeStateToReadyToPickIfRequired(LunchPicker lunchPicker) {
-        if (canChangeStateToReadyToPick(lunchPicker)) {
-            lunchPicker.setState(LunchPicker.State.READY_TO_PICK);
-        }
     }
 
     @Override
@@ -78,6 +74,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     public LunchPicker submitLunchOption(SubmitLunchOptionRequest request, String username) {
         log.info("Submitting lunch option");
         LunchPicker lunchPicker = getLunchPickerById(request.getLunchPickerId());
+
         ensureNotPicked(lunchPicker);
 
         LunchOption lunchOption = getOrAddLunchOption(lunchPicker, username);
@@ -85,7 +82,9 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         lunchOption.setShopName(request.getShopName());
         lunchOption.setShopUrl(request.getShopUrl());
 
-        changeStateToReadyToPickIfRequired(lunchPicker);
+        if (isWaitTimeOver(lunchPicker) || isAllSubmitted(lunchPicker)) {
+            lunchPicker.setState(LunchPicker.State.READY_TO_PICK);
+        }
 
         lunchPicker = lunchPickerRepo.save(lunchPicker);
 
@@ -109,8 +108,9 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     public LunchPicker pickLunchOption(PickLunchOptionRequest request, String username) {
         log.info("Picking lunch option");
         LunchPicker lunchPicker = getLunchPickerById(request.getLunchPickerId());
+
         ensureNotPicked(lunchPicker);
-        changeStateToReadyToPickIfRequired(lunchPicker);
+        updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
 
         if (!LunchPicker.State.READY_TO_PICK.equals(lunchPicker.getState())) {
             throw new GoLunchException("Waiting for other submissions");
@@ -145,15 +145,27 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         return lunchOption;
     }
 
-    private boolean canChangeStateToReadyToPick(LunchPicker lunchPicker) {
-        if (!LunchPicker.State.SUBMITTING.equals(lunchPicker.getState())) {
-            return false;
+    private void updateStateIfWaitTimeOverWithSomeOptions(LunchPicker lunchPicker) {
+        if (isStateSubmitting(lunchPicker) && isWaitTimeOver(lunchPicker) && hasOptions(lunchPicker)) {
+            lunchPicker.setState(LunchPicker.State.READY_TO_PICK);
         }
+    }
+
+    private boolean isStateSubmitting(LunchPicker lunchPicker) {
+        return LunchPicker.State.SUBMITTING.equals(lunchPicker.getState());
+    }
+
+    private boolean isWaitTimeOver(LunchPicker lunchPicker) {
         ZonedDateTime waitTimeEnd = lunchPicker.getStartTime().plus(lunchPicker.getWaitTime());
-        if (ZonedDateTime.now().isAfter(waitTimeEnd)) {
-            return true;
-        }
+        return ZonedDateTime.now().isAfter(waitTimeEnd);
+    }
+
+    private boolean isAllSubmitted(LunchPicker lunchPicker) {
         return lunchPicker.getLunchOptions().size() == userRepo.count();
+    }
+
+    private boolean hasOptions(LunchPicker lunchPicker) {
+        return !CollectionUtils.isEmpty(lunchPicker.getLunchOptions());
     }
 
 }
