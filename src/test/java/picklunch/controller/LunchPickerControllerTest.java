@@ -1,7 +1,7 @@
 package picklunch.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import picklunch.exception.GoLunchException;
+import picklunch.exception.PickLunchException;
 import picklunch.model.CreateLunchPickerRequest;
 import picklunch.model.ErrorResponse;
 import picklunch.model.PickLunchOptionRequest;
@@ -114,7 +114,7 @@ class LunchPickerControllerTest {
     @Test
     @WithMockUser("user1")
     void testErrorResponse() throws Exception {
-        GoLunchException exception = new GoLunchException("test error");
+        PickLunchException exception = new PickLunchException("test error");
         when(lunchPickerService.createLunchPicker(any())).thenThrow(exception);
 
         MvcResult result = mockMvc.perform(post("/api/lunch-picker")

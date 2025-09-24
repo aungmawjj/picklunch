@@ -1,14 +1,5 @@
 package picklunch.service.impl;
 
-import picklunch.exception.GoLunchException;
-import picklunch.model.CreateLunchPickerRequest;
-import picklunch.model.PickLunchOptionRequest;
-import picklunch.model.SubmitLunchOptionRequest;
-import picklunch.model.entity.LunchOption;
-import picklunch.model.entity.LunchPicker;
-import picklunch.repository.LunchPickerRepo;
-import picklunch.repository.UserRepo;
-import picklunch.service.LunchPickerService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import picklunch.exception.PickLunchException;
+import picklunch.model.CreateLunchPickerRequest;
+import picklunch.model.PickLunchOptionRequest;
+import picklunch.model.SubmitLunchOptionRequest;
+import picklunch.model.entity.LunchOption;
+import picklunch.model.entity.LunchPicker;
+import picklunch.repository.LunchPickerRepo;
+import picklunch.repository.UserRepo;
+import picklunch.service.LunchPickerService;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -39,29 +39,6 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     Duration defaultWaitTime;
 
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public LunchPicker createLunchPicker(CreateLunchPickerRequest request) {
-        log.info("Creating lunch picker");
-        long activeCount = lunchPickerRepo.countByStateNot(LunchPicker.State.PICKED);
-        if (activeCount > 0) {
-            // for now, allow only one active lunch picker
-            throw new GoLunchException("Active lunch picker exists");
-        }
-
-        Duration waitTime = ObjectUtils.getIfNull(request.getWaitTime(), defaultWaitTime);
-        LunchPicker lunchPicker = LunchPicker.builder()
-                .state(LunchPicker.State.SUBMITTING)
-                .startTime(ZonedDateTime.now())
-                .waitTime(waitTime)
-                .build();
-        lunchPicker = lunchPickerRepo.save(lunchPicker);
-
-        log.info("Created lunch picker, id={} duration={} state={}",
-                lunchPicker.getId(), lunchPicker.getWaitTime(), lunchPicker.getState());
-        return lunchPicker;
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Page<LunchPicker> getLunchPickers(Pageable pageable) {
         Page<LunchPicker> lunchPickers = lunchPickerRepo.findAll(pageable);
@@ -79,35 +56,47 @@ public class LunchPickerServiceImpl implements LunchPickerService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public LunchPicker createLunchPicker(CreateLunchPickerRequest request) {
+        log.info("Creating lunch picker");
+
+        validateNoActiveLunchPicker();
+
+        Duration waitTime = ObjectUtils.getIfNull(request.getWaitTime(), defaultWaitTime);
+        LunchPicker lunchPicker = LunchPicker.builder()
+                .state(LunchPicker.State.SUBMITTING)
+                .startTime(ZonedDateTime.now())
+                .waitTime(waitTime)
+                .build();
+        lunchPicker = lunchPickerRepo.save(lunchPicker);
+
+        log.info("Created lunch picker, id={} duration={} state={}",
+                lunchPicker.getId(), lunchPicker.getWaitTime(), lunchPicker.getState());
+        return lunchPicker;
+    }
+
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public LunchPicker submitLunchOption(SubmitLunchOptionRequest request, String username) {
         log.info("Submitting lunch option");
         LunchPicker lunchPicker = getLunchPickerByIdOrElseThrow(request.getLunchPickerId());
 
-        ensureNotPicked(lunchPicker);
+        validateNotPicked(lunchPicker);
+        validateNotSubmitted(lunchPicker, username);
 
-        LunchOption lunchOption = getOrAddLunchOption(lunchPicker, username);
-        lunchOption.setSubmittedUsername(username);
-        lunchOption.setShopName(request.getShopName());
-        lunchOption.setShopUrl(request.getShopUrl());
+        LunchOption lunchOption = createLunchOption(request, username);
+        if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
+            lunchPicker.setLunchOptions(new ArrayList<>());
+            lunchPicker.setFirstSubmittedUsername(username);
+        }
+        lunchPicker.getLunchOptions().add(lunchOption);
 
         if (isWaitTimeOver(lunchPicker) || isAllSubmitted(lunchPicker)) {
             lunchPicker.setState(LunchPicker.State.READY_TO_PICK);
         }
-
         lunchPicker = lunchPickerRepo.save(lunchPicker);
-
-        if (lunchOption.getSubmitter() == null) {
-            lunchOption.setSubmitter(userRepo.findByUsername(username));
-        }
-
         log.info("Submitted lunch option, picker_state={}", lunchPicker.getState());
         return lunchPicker;
-    }
-
-    private void ensureNotPicked(LunchPicker lunchPicker) {
-        if (LunchPicker.State.PICKED.equals(lunchPicker.getState())) {
-            throw new GoLunchException("Already picked a lunch option");
-        }
     }
 
     @Override
@@ -116,15 +105,12 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         log.info("Picking lunch option");
         LunchPicker lunchPicker = getLunchPickerByIdOrElseThrow(request.getLunchPickerId());
 
-        ensureNotPicked(lunchPicker);
         updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
 
-        if (!LunchPicker.State.READY_TO_PICK.equals(lunchPicker.getState())) {
-            throw new GoLunchException("Waiting for other submissions");
-        }
-        if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
-            throw new GoLunchException("No lunch option to pick");
-        }
+        validateNotPicked(lunchPicker);
+        validateReadyToPick(lunchPicker);
+        validateHasOptionsToPick(lunchPicker);
+        validatePickerIsFirstSubmitter(lunchPicker, username);
 
         int index = new Random().nextInt(lunchPicker.getLunchOptions().size());
         lunchPicker.setPickedLunchOption(lunchPicker.getLunchOptions().get(index));
@@ -138,23 +124,60 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         return lunchPicker;
     }
 
-    private LunchPicker getLunchPickerByIdOrElseThrow(Long id) {
-        return lunchPickerRepo.findById(id)
-                .orElseThrow(() -> new GoLunchException("Lunch picker not found"));
+    private void validateNoActiveLunchPicker() {
+        long activeCount = lunchPickerRepo.countByStateNot(LunchPicker.State.PICKED);
+        if (activeCount > 0) {
+            throw new PickLunchException("Active lunch picker exists");
+        }
     }
 
-    private LunchOption getOrAddLunchOption(LunchPicker lunchPicker, String username) {
-        if (lunchPicker.getLunchOptions() == null) {
-            lunchPicker.setLunchOptions(new ArrayList<>());
+    private void validateNotPicked(LunchPicker lunchPicker) {
+        if (LunchPicker.State.PICKED.equals(lunchPicker.getState())) {
+            throw new PickLunchException("Already picked a lunch option");
         }
-        LunchOption lunchOption = lunchPicker.getLunchOptions().stream()
-                .filter(option -> username.equals(option.getSubmittedUsername()))
-                .findFirst().orElse(new LunchOption());
+    }
 
-        if (lunchOption.getId() == null) {
-            lunchPicker.getLunchOptions().add(lunchOption);
+    private void validateNotSubmitted(LunchPicker lunchPicker, String username) {
+        if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
+            return;
         }
-        return lunchOption;
+        boolean submitted = lunchPicker.getLunchOptions().stream().anyMatch(option ->
+                option.getSubmittedUsername().equals(username));
+        if (submitted) {
+            throw new PickLunchException("Already submitted a lunch option");
+        }
+    }
+
+    private void validateReadyToPick(LunchPicker lunchPicker) {
+        if (!LunchPicker.State.READY_TO_PICK.equals(lunchPicker.getState())) {
+            throw new PickLunchException("Waiting for other submissions");
+        }
+    }
+
+    private void validateHasOptionsToPick(LunchPicker lunchPicker) {
+        if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
+            throw new PickLunchException("No lunch option to pick");
+        }
+    }
+
+    private void validatePickerIsFirstSubmitter(LunchPicker lunchPicker, String username) {
+        if (!username.equals(lunchPicker.getFirstSubmittedUsername())) {
+            throw new PickLunchException("Only first submitter can pick a random option");
+        }
+    }
+
+    private LunchOption createLunchOption(SubmitLunchOptionRequest request, String username) {
+        return LunchOption.builder()
+                .submittedUsername(username)
+                .submitter(userRepo.findByUsername(username))
+                .shopName(request.getShopName())
+                .shopUrl(request.getShopUrl())
+                .build();
+    }
+
+    private LunchPicker getLunchPickerByIdOrElseThrow(Long id) {
+        return lunchPickerRepo.findById(id)
+                .orElseThrow(() -> new PickLunchException("Lunch picker not found"));
     }
 
     private void updateStateIfWaitTimeOverWithSomeOptions(LunchPicker lunchPicker) {
@@ -179,5 +202,4 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     private boolean hasOptions(LunchPicker lunchPicker) {
         return !CollectionUtils.isEmpty(lunchPicker.getLunchOptions());
     }
-
 }

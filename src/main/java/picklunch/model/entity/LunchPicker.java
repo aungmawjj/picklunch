@@ -37,6 +37,8 @@ public class LunchPicker {
 
     private Duration waitTime;
 
+    private String firstSubmittedUsername;
+
     @OneToOne
     @JoinColumn(name = "picked_lunch_option_id")
     private LunchOption pickedLunchOption;

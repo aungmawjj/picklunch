@@ -1,13 +1,5 @@
 package picklunch.service;
 
-import picklunch.exception.GoLunchException;
-import picklunch.model.CreateLunchPickerRequest;
-import picklunch.model.PickLunchOptionRequest;
-import picklunch.model.SubmitLunchOptionRequest;
-import picklunch.model.entity.LunchPicker;
-import picklunch.model.entity.User;
-import picklunch.repository.LunchPickerRepo;
-import picklunch.repository.UserRepo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.CollectionUtils;
+import picklunch.exception.PickLunchException;
+import picklunch.model.CreateLunchPickerRequest;
+import picklunch.model.PickLunchOptionRequest;
+import picklunch.model.SubmitLunchOptionRequest;
+import picklunch.model.entity.LunchPicker;
+import picklunch.model.entity.User;
+import picklunch.repository.LunchPickerRepo;
+import picklunch.repository.UserRepo;
 
 import java.time.Duration;
 import java.util.List;
@@ -63,7 +63,7 @@ public class LunchPickerServiceTest {
     @Test
     void testCannotCreateWhenActiveLunchPickerExists() {
         createDefaultLunchPicker();
-        assertThrows(GoLunchException.class, this::createDefaultLunchPicker);
+        assertThrows(PickLunchException.class, this::createDefaultLunchPicker);
     }
 
     @Test
@@ -84,13 +84,22 @@ public class LunchPickerServiceTest {
     @Test
     void testCanSubmit() {
         String user0 = usernames.get(0);
-
         LunchPicker lunchPicker = createDefaultLunchPicker();
 
         lunchPicker = lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopA"), user0);
 
         assertEquals(LunchPicker.State.SUBMITTING, lunchPicker.getState());
         assertEquals(1, lunchPicker.getLunchOptions().size());
+    }
+
+    @Test
+    void testCannotSubmitMoreThanOnce() {
+        String user0 = usernames.get(0);
+        LunchPicker lunchPicker = createDefaultLunchPicker();
+
+        lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopA"), user0);
+        assertThrows(PickLunchException.class, () ->
+                lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopB"), user0));
     }
 
     @Test
@@ -105,7 +114,7 @@ public class LunchPickerServiceTest {
         PickLunchOptionRequest pickReq = pickRequest(lunchPicker);
 
         assertThrows(
-                GoLunchException.class,
+                PickLunchException.class,
                 () -> lunchPickerService.pickLunchOption(pickReq, user0),
                 "cannot pick while waiting for other submissions"
         );
@@ -168,7 +177,7 @@ public class LunchPickerServiceTest {
         SubmitLunchOptionRequest submitReq = submitRequest(lunchPicker, "ShopC");
 
         assertThrows(
-                GoLunchException.class,
+                PickLunchException.class,
                 () -> lunchPickerService.submitLunchOption(submitReq, user0),
                 "cannot submit after picking an option"
         );
@@ -195,6 +204,25 @@ public class LunchPickerServiceTest {
         Page<LunchPicker> lunchPickers = lunchPickerService.getLunchPickers(PageRequest.of(0, 10));
         assertEquals(2, lunchPickers.getTotalElements());
         assertEquals(2, lunchPickers.getContent().size());
+    }
+
+    @Test
+    void testOnlyFirstSubmitterCanPick() {
+        String user0 = usernames.get(0);
+        String user1 = usernames.get(1);
+        LunchPicker lunchPicker = createDefaultLunchPicker();
+
+        lunchPicker = lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopA"), user1);
+        lunchPicker = lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopA"), user0);
+
+        PickLunchOptionRequest pickReq = pickRequest(lunchPicker);
+
+        assertThrows(PickLunchException.class, () -> lunchPickerService.pickLunchOption(pickReq, user0));
+        assertNotEquals(LunchPicker.State.PICKED, lunchPicker.getState());
+
+        lunchPicker = lunchPickerService.pickLunchOption(pickReq, user1);
+        assertEquals(LunchPicker.State.PICKED, lunchPicker.getState());
+        assertNotNull(lunchPicker.getPickedLunchOption());
     }
 
     private SubmitLunchOptionRequest submitRequest(LunchPicker lunchPicker, String shopName) {

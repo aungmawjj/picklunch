@@ -1,7 +1,8 @@
 package picklunch.tools;
 
-import picklunch.model.entity.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import picklunch.model.entity.User;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class DummyUsersGenerator {
     private static List<User> generateRandomUsers(int count) {
         List<User> users = new ArrayList<>();
         Random random = new Random();
-        String encodedPassword = new BCryptPasswordEncoder().encode("1111");
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         for (int i = 0; i < count; i++) {
             String firstName = FIRST_NAMES[random.nextInt(FIRST_NAMES.length)];
@@ -48,7 +49,7 @@ public class DummyUsersGenerator {
             users.add(User.builder()
                     .displayName(firstName + " " + lastName)
                     .username("user" + (i + 1))
-                    .encodedPassword(encodedPassword)
+                    .encodedPassword(passwordEncoder.encode("1111"))
                     .build()
             );
         }

@@ -1,6 +1,6 @@
 package picklunch.controller;
 
-import picklunch.exception.GoLunchException;
+import picklunch.exception.PickLunchException;
 import picklunch.model.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,8 +20,8 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(GoLunchException.class)
-    public @ResponseBody ErrorResponse handleGoLunchException(GoLunchException exception) {
+    @ExceptionHandler(PickLunchException.class)
+    public @ResponseBody ErrorResponse handleGoLunchException(PickLunchException exception) {
         log.warn("Handling exception, message={}", exception.getMessage(), exception);
         return ErrorResponse.builder()
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
