@@ -1,16 +1,6 @@
 package picklunch.controller;
 
-import picklunch.model.CreateLunchPickerRequest;
-import picklunch.model.ErrorResponse;
-import picklunch.model.PickLunchOptionRequest;
-import picklunch.model.SubmitLunchOptionRequest;
-import picklunch.model.entity.LunchPicker;
-import picklunch.service.LunchPickerService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +10,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import picklunch.model.CreateLunchPickerRequest;
+import picklunch.model.PickLunchOptionRequest;
+import picklunch.model.SubmitLunchOptionRequest;
+import picklunch.model.entity.LunchPicker;
+import picklunch.service.LunchPickerService;
 
 @RestController
 @RequestMapping("/api/lunch-picker")
@@ -28,15 +23,6 @@ public class LunchPickerController {
 
     @Autowired
     LunchPickerService lunchPickerService;
-
-    @PostMapping("")
-    @Operation(
-            summary = "Create a new lunch picker",
-            description = "Default wait time is 30 minutes"
-    )
-    public LunchPicker createLunchPicker(@Validated @RequestBody CreateLunchPickerRequest request) {
-        return lunchPickerService.createLunchPicker(request);
-    }
 
     @GetMapping("")
     @Operation(summary = "List lunch pickers")
@@ -52,17 +38,20 @@ public class LunchPickerController {
         return lunchPickerService.getLunchPickerById(id);
     }
 
+    @PostMapping("")
+    @Operation(
+            summary = "Create a new lunch picker",
+            description = "Default wait time is 30 minutes"
+    )
+    public LunchPicker createLunchPicker(@Validated @RequestBody CreateLunchPickerRequest request) {
+        return lunchPickerService.createLunchPicker(request);
+    }
+
     @PostMapping("/option")
     @Operation(
             summary = "Submit lunch option",
             description = "Can submit options before picking one"
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "400", description = "Bad Request",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
-    })
     public LunchPicker submitLunchOption(
             @Validated @RequestBody SubmitLunchOptionRequest request,
             Authentication authentication

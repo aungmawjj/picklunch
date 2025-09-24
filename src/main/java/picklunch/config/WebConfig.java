@@ -23,6 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
+        // custom login page
         registry.addViewController("/login").setViewName("login");
     }
 

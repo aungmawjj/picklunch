@@ -42,6 +42,8 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     @Transactional(readOnly = true)
     public Page<LunchPicker> getLunchPickers(Pageable pageable) {
         Page<LunchPicker> lunchPickers = lunchPickerRepo.findAll(pageable);
+        // for the ui to display the state and conditional actions
+        // update state only for the response, no write action to database
         lunchPickers.forEach(this::updateStateIfWaitTimeOverWithSomeOptions);
         return lunchPickers;
     }
@@ -59,6 +61,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     public LunchPicker createLunchPicker(CreateLunchPickerRequest request) {
         log.info("Creating lunch picker");
 
+        // for simplicity, not allow creating when there is a picker with not PICKED state
         validateNoActiveLunchPicker();
 
         Duration waitTime = ObjectUtils.getIfNull(request.getWaitTime(), defaultWaitTime);
@@ -73,7 +76,6 @@ public class LunchPickerServiceImpl implements LunchPickerService {
                 lunchPicker.getId(), lunchPicker.getWaitTime(), lunchPicker.getState());
         return lunchPicker;
     }
-
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -107,7 +109,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
 
         updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
 
-        validateNotPicked(lunchPicker);
+        validateNotPicked(lunchPicker); // redundant validator, to get better error message
         validateReadyToPick(lunchPicker);
         validateHasOptionsToPick(lunchPicker);
         validatePickerIsFirstSubmitter(lunchPicker, username);
