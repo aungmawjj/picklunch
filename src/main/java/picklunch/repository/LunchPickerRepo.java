@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LunchPickerRepo extends JpaRepository<LunchPicker, Long> {
 
-    long countByStateNot(LunchPicker.State state);
+    boolean existsByStateNot(LunchPicker.State state);
 
 }

@@ -1,0 +1,67 @@
+@if (lunchPicker.pickedLunchOption; as pickedOption) {
+
+<div class="picked-option">
+  <span class="label-large-outline">Picked Option</span>
+  <h1 class="display-medium">{{ pickedOption.shopName }}</h1>
+
+  @if(pickedOption.shopUrl) {
+  <a [href]="pickedOption.shopUrl" target="_blank" class="shop-url">{{ pickedOption.shopUrl }}</a>
+  }
+
+  <span class="label-medium-outline"> Submitter </span>
+  <div class="title-medium">{{ pickedOption.submitter.displayName }}</div>
+</div>
+
+}
+
+<h2 class="title-medium">Lunch Options</h2>
+<mat-divider></mat-divider>
+
+<div class="picker-key-values">
+  <div class="spacer">
+    <span class="label-medium-outline">Start Time</span>
+    <div class="title-medium">
+      {{ lunchPicker.startTime | date : 'LLL dd hh:mm a' }}
+    </div>
+  </div>
+
+  @if (lunchPicker.firstSubmitter) {
+
+  <div class="spacer">
+    <span class="label-medium-outline">First Submitter</span>
+    <div class="title-medium">
+      {{ lunchPicker.firstSubmitter.displayName }}
+    </div>
+  </div>
+
+  }
+</div>
+
+@if (!hasOptions()) {
+<p class="body-medium">No one submitted yet!</p>
+}
+
+<mat-accordion>
+  @for (lunchOption of lunchPicker.lunchOptions; track lunchOption.id) {
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title class="overflow-hidden">
+        <span class="option-title">
+          {{ lunchOption.shopName }}
+        </span>
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <h1 class="display-small">{{ lunchOption.shopName }}</h1>
+
+    @if(lunchOption.shopUrl) {
+    <a [href]="lunchOption.shopUrl" target="_blank" class="shop-url">{{ lunchOption.shopUrl }}</a>
+    }
+
+    <span class="label-medium-outline"> Submitter </span>
+    <div class="title-medium">{{ lunchOption.submitter.displayName }}</div>
+  </mat-expansion-panel>
+
+  }
+</mat-accordion>

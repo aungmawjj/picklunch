@@ -1,0 +1,36 @@
+.picked-option {
+  border: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface-container-lowest);
+  border-radius: var(--mat-sys-corner-medium);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.shop-url {
+  display: block;
+  max-width: 300px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-bottom: 24px;
+  font: var(--mat-sys-body-medium);
+}
+
+.picker-key-values {
+  padding: 24px 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.option-title {
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,30 @@
+<mat-toolbar class="toolbar">
+  <a routerLink="/" class="root-link">
+    <mat-icon class="logo">lunch_dining</mat-icon>
+    <span class="title">Pick Lunch</span>
+  </a>
+  <span class="spacer"></span>
+  <button matButton="text">
+    <mat-icon>history</mat-icon>
+    History
+  </button>
+
+  @if(user$ | async; as user) {
+  <span class="title-medium user-display-name">{{ user.displayName }}</span>
+
+  <button class="user-button" matIconButton [matMenuTriggerFor]="menu" aria-label="User">
+    <mat-icon>person</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu">
+    <div class="menu-content">
+      <span class="title-large">{{ user.displayName }}</span>
+      <span class="label-large-outline">{{ user.username }}</span>
+      <button matButton="text" (click)="onClickLogout()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+  </mat-menu>
+  }
+</mat-toolbar>

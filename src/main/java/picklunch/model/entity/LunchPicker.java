@@ -23,7 +23,7 @@ import java.util.List;
 public class LunchPicker {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL)
@@ -37,7 +37,17 @@ public class LunchPicker {
 
     private Duration waitTime;
 
+    @Column(name = "first_submitted_username")
     private String firstSubmittedUsername;
+
+    @OneToOne
+    @JoinColumn(
+            name = "first_submitted_username",
+            referencedColumnName = "username",
+            insertable = false,
+            updatable = false
+    )
+    private User firstSubmitter;
 
     @OneToOne
     @JoinColumn(name = "picked_lunch_option_id")
@@ -51,6 +61,13 @@ public class LunchPicker {
 
     @LastModifiedDate
     private ZonedDateTime updatedAt;
+
+    public ZonedDateTime getWaitTimeEnd() {
+        if (this.startTime == null || this.waitTime == null) {
+            return null;
+        }
+        return this.getStartTime().plus(this.getWaitTime());
+    }
 
     public enum State {
         SUBMITTING, READY_TO_PICK, PICKED

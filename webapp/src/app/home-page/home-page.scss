@@ -1,0 +1,47 @@
+@use '@angular/material' as mat;
+
+:host {
+  @include mat.expansion-overrides(
+    (
+      container-background-color: var(--mat-sys-surface-container-lowest),
+    )
+  );
+}
+
+.page-content {
+  max-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.state-bar {
+  display: flex;
+  align-items: center;
+  padding: 32px 0;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.state {
+  padding: 8px 24px;
+  border-radius: var(--mat-sys-corner-medium);
+  background-color: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  font: var(--mat-sys-title-medium);
+  width: fit-content;
+  letter-spacing: 1px;
+}
+
+.form-card {
+  border: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface-container-lowest);
+  border-radius: var(--mat-sys-corner-medium);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.form-card .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}

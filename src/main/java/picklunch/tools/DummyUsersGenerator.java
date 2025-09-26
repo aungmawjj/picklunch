@@ -49,7 +49,7 @@ public class DummyUsersGenerator {
             users.add(User.builder()
                     .displayName(firstName + " " + lastName)
                     .username("user" + (i + 1))
-                    .encodedPassword(passwordEncoder.encode("1111"))
+                    .encodedPassword(passwordEncoder.encode("pw"))
                     .build()
             );
         }

@@ -38,6 +38,8 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     @Value("${picklunch.picker.wait-time}")
     Duration defaultWaitTime;
 
+    private final Random random = new Random();
+
     @Override
     @Transactional(readOnly = true)
     public Page<LunchPicker> getLunchPickers(Pageable pageable) {
@@ -90,6 +92,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
             lunchPicker.setLunchOptions(new ArrayList<>());
             lunchPicker.setFirstSubmittedUsername(username);
+            lunchPicker.setFirstSubmitter(lunchOption.getSubmitter());
         }
         lunchPicker.getLunchOptions().add(lunchOption);
 
@@ -114,7 +117,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         validateHasOptionsToPick(lunchPicker);
         validatePickerIsFirstSubmitter(lunchPicker, username);
 
-        int index = new Random().nextInt(lunchPicker.getLunchOptions().size());
+        int index = random.nextInt(lunchPicker.getLunchOptions().size());
         lunchPicker.setPickedLunchOption(lunchPicker.getLunchOptions().get(index));
         lunchPicker.setState(LunchPicker.State.PICKED);
 
@@ -127,8 +130,8 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     }
 
     private void validateNoActiveLunchPicker() {
-        long activeCount = lunchPickerRepo.countByStateNot(LunchPicker.State.PICKED);
-        if (activeCount > 0) {
+        boolean activePickerExists = lunchPickerRepo.existsByStateNot(LunchPicker.State.PICKED);
+        if (activePickerExists) {
             throw new PickLunchException("Active lunch picker exists");
         }
     }
@@ -193,8 +196,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     }
 
     private boolean isWaitTimeOver(LunchPicker lunchPicker) {
-        ZonedDateTime waitTimeEnd = lunchPicker.getStartTime().plus(lunchPicker.getWaitTime());
-        return ZonedDateTime.now().isAfter(waitTimeEnd);
+        return ZonedDateTime.now().isAfter(lunchPicker.getWaitTimeEnd());
     }
 
     private boolean isAllSubmitted(LunchPicker lunchPicker) {

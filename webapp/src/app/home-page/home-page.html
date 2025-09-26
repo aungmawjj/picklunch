@@ -1,0 +1,114 @@
+<div class="page-root">
+  <div class="page-content">
+    @if (!(restartFlag$ | async)) { @if(currentPicker$ | async; as lunchPicker) {
+
+    <div class="state-bar">
+      <div class="state">{{ lunchPicker.state }}</div>
+
+      <span class="spacer"></span>
+
+      @if (lunchPicker.state == "SUBMITTING") {
+
+      <pl-remaining-wait-time
+        [lunchPicker]="lunchPicker"
+        (waitTimeOver)="fetchLatestLunchPicker()"
+      />
+
+      } @else if (lunchPicker.state == "READY_TO_PICK") { @if (!canPick(lunchPicker)) {
+
+      <mat-icon style="padding: 8px" matTooltip="Only first submitter can pick!">
+        info_outlined
+      </mat-icon>
+
+      }
+
+      <button matButton="filled" [disabled]="!canPick(lunchPicker)" (click)="onClickPick()">
+        <mat-icon>shuffle</mat-icon>
+        Pick
+      </button>
+
+      } @else if (lunchPicker.state == "PICKED"){
+
+      <button matButton="filled" (click)="onClickRestart()">
+        <mat-icon>restart_alt</mat-icon>
+        Restart
+      </button>
+
+      }
+    </div>
+
+    @if (!myOption(lunchPicker)) {
+
+    <form (submit)="onSubmitOptioin()" class="form-card">
+      <h4 class="title-large">Submit Your Option</h4>
+
+      <mat-form-field appearance="outline" style="width: 100%">
+        <mat-label>Shop Name</mat-label>
+        <input
+          matInput
+          placeholder="Pizza Hut"
+          name="shopName"
+          [(ngModel)]="optionForm.shopName"
+          required
+          #shopName="ngModel"
+        />
+
+        @if (shopName.invalid) {
+        <mat-error>Please enter shop name!</mat-error>
+        }
+      </mat-form-field>
+
+      @if (shopName.touched && shopName.invalid) {
+      <div style="height: 24px"></div>
+      }
+
+      <mat-form-field appearance="outline" style="width: 100%">
+        <mat-label>Shop URL</mat-label>
+        <textarea
+          matInput
+          placeholder="https://www.google.com/maps/..."
+          name="shopUrl"
+          [(ngModel)]="optionForm.shopUrl"
+        ></textarea>
+      </mat-form-field>
+
+      <div class="actions">
+        <button type="submit" matButton="filled">
+          <mat-icon>how_to_vote</mat-icon>
+          Submit
+        </button>
+      </div>
+    </form>
+
+    }
+
+    <pl-lunch-picker-details [lunchPicker]="lunchPicker" />
+
+    }} @if((restartFlag$ | async) || !(currentPicker$ | async)) {
+
+    <form (submit)="onStartPicker()" class="form-card" style="margin-top: 40px">
+      <h4 class="title-large">Start Lunch Picker</h4>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Wait Time</mat-label>
+        <mat-select [(ngModel)]="startForm.waitTime" name="waitTime">
+          @for (option of waitTimeOptions; track option) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="actions">
+        @if(restartFlag$ | async) {
+        <button type="button" matButton="text" (click)="onClickCancelReStart()">Cancel</button>
+        }
+        <button type="submit" matButton="filled">
+          <mat-icon>start</mat-icon>
+          Start
+        </button>
+      </div>
+    </form>
+
+    }
+  </div>
+</div>

@@ -29,7 +29,7 @@ public class LunchOption {
     @Column(name = "submitted_username", nullable = false)
     private String submittedUsername;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(
             name = "submitted_username",
             referencedColumnName = "username",
