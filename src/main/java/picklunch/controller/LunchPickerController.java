@@ -41,7 +41,7 @@ public class LunchPickerController {
     @PostMapping("")
     @Operation(
             summary = "Create a new lunch picker",
-            description = "Default wait time is 30 minutes"
+            description = "Default wait time is 10 minutes"
     )
     public LunchPicker createLunchPicker(@Validated @RequestBody CreateLunchPickerRequest request) {
         return lunchPickerService.createLunchPicker(request);
@@ -50,7 +50,7 @@ public class LunchPickerController {
     @PostMapping("/option")
     @Operation(
             summary = "Submit lunch option",
-            description = "Can submit options before picking one"
+            description = "Can submit options before picking a random one"
     )
     public LunchPicker submitLunchOption(
             @Validated @RequestBody SubmitLunchOptionRequest request,

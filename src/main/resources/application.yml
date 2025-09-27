@@ -18,9 +18,9 @@ server:
 
 picklunch:
   files:
-    users: users.csv
+    users: ${PL_USERS_FILE:users.csv}
   picker:
     wait-time: 10m
   webapp:
     static:
-      dir: webapp/dist/webapp/browser/
+      dir: ${PL_WEBAPP_STATIC_DIR:webapp/dist/webapp/browser/}
