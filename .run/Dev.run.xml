@@ -3,7 +3,7 @@
     <envs>
       <env name="SPRING_PROFILES_ACTIVE" value="dev" />
     </envs>
-    <option name="MAIN_CLASS_NAME" value="picklunch.GolunchApplication" />
+    <option name="MAIN_CLASS_NAME" value="picklunch.PicklunchApplication" />
     <module name="picklunch" />
     <extension name="coverage">
       <pattern>

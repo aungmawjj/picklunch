@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(PickLunchException.class)
-    public @ResponseBody ErrorResponse handleGoLunchException(PickLunchException exception) {
+    public @ResponseBody ErrorResponse handlePickLunchException(PickLunchException exception) {
         log.warn("Handling exception, message={}", exception.getMessage(), exception);
         return ErrorResponse.builder()
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())

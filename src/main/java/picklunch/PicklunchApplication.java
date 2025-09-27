@@ -11,10 +11,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         version = "1.0",
         description = "API documentation for Pick Lunch Service"
 ))
-public class GolunchApplication {
+public class PicklunchApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(GolunchApplication.class, args);
+        SpringApplication.run(PicklunchApplication.class, args);
     }
 
 }

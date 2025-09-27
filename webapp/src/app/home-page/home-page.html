@@ -16,9 +16,14 @@
 
       } @else if (lunchPicker.state == "READY_TO_PICK") { @if (!canPick(lunchPicker)) {
 
-      <mat-icon style="padding: 8px" matTooltip="Only first submitter can pick!">
-        info_outlined
-      </mat-icon>
+      <button
+        matIconButton
+        matTooltip="Only first submitter can pick!"
+        #tooltip="matTooltip"
+        (click)="tooltip.show()"
+      >
+        <mat-icon>info_outlined</mat-icon>
+      </button>
 
       }
 

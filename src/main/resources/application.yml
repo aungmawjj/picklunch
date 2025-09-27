@@ -1,6 +1,6 @@
 spring:
   application:
-    name: Go Lunch
+    name: Pick Lunch
 
 springdoc:
   swagger-ui:
@@ -20,7 +20,7 @@ picklunch:
   files:
     users: ${PL_USERS_FILE:users.csv}
   picker:
-    wait-time: 10m
+    wait-time: ${PL_WAIT_TIME:10m}
   webapp:
     static:
       dir: ${PL_WEBAPP_STATIC_DIR:webapp/dist/webapp/browser/}
