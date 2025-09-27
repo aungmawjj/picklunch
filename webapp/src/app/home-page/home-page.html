@@ -1,6 +1,6 @@
 <div class="page-root">
   <div class="page-content">
-    @if (!(restartFlag$ | async)) { @if(currentPicker$ | async; as lunchPicker) {
+    @if(lunchPicker$ | async; as lunchPicker) { @if(!(restartFlag$ | async)) {
 
     <div class="state-bar">
       <div class="state">{{ lunchPicker.state }}</div>
@@ -24,7 +24,7 @@
 
       <button matButton="filled" [disabled]="!canPick(lunchPicker)" (click)="onClickPick()">
         <mat-icon>shuffle</mat-icon>
-        Pick
+        Pick Random
       </button>
 
       } @else if (lunchPicker.state == "PICKED"){
@@ -37,9 +37,9 @@
       }
     </div>
 
-    @if (!myOption(lunchPicker)) {
+    @if (showSubmitOptionForm(lunchPicker)) {
 
-    <form (submit)="onSubmitOptioin()" class="form-card">
+    <form (submit)="onSubmitOption()" class="form-card">
       <h4 class="title-large">Submit Your Option</h4>
 
       <mat-form-field appearance="outline" style="width: 100%">
@@ -84,7 +84,7 @@
 
     <pl-lunch-picker-details [lunchPicker]="lunchPicker" />
 
-    }} @if((restartFlag$ | async) || !(currentPicker$ | async)) {
+    }} @if(showStartForm(loadingFlag$ | async, restartFlag$ | async, lunchPicker$ | async)) {
 
     <form (submit)="onStartPicker()" class="form-card" style="margin-top: 40px">
       <h4 class="title-large">Start Lunch Picker</h4>
@@ -109,6 +109,8 @@
       </div>
     </form>
 
+    } @if ((loadingFlag$ | async) && !(lunchPicker$| async)) {
+    <pl-loading />
     }
   </div>
 </div>

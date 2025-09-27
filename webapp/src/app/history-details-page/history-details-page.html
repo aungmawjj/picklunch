@@ -1,0 +1,13 @@
+<div class="page-root">
+  <div class="page-content">
+    <button matButton="text" class="back-button" (click)="onClickBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back
+    </button>
+    @if(lunchPicker$ | async; as lunchPicker) {
+    <pl-lunch-picker-details [lunchPicker]="lunchPicker" />
+    } @else {
+    <pl-loading />
+    }
+  </div>
+</div>

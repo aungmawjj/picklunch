@@ -1,20 +1,17 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { LunchPickerDetatils } from './lunch-picker-details';
+import { TestBed } from '@angular/core/testing';
+import { Loading } from './loading';
 import { provideZonelessChangeDetection } from '@angular/core';
 
-describe('LunchPicker', () => {
-  let fixture: ComponentFixture<LunchPickerDetatils>;
-
+describe('Loading', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LunchPickerDetatils],
+      imports: [Loading],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
   });
 
   it('should create', () => {
-    fixture = TestBed.createComponent(LunchPickerDetatils);
+    const fixture = TestBed.createComponent(Loading);
     const component = fixture.componentInstance;
     expect(component).toBeTruthy();
   });

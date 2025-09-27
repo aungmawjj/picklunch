@@ -17,13 +17,16 @@ export class RemainingWaitTime implements OnInit, OnDestroy {
   waitTimeOver = new EventEmitter<void>();
 
   private readonly remainingWaitTimeSubject = new BehaviorSubject<string>('');
-  public readonly remainingWaitTime$ = this.remainingWaitTimeSubject.asObservable();
+  readonly remainingWaitTime$ = this.remainingWaitTimeSubject.asObservable();
 
   private resolverInterval?: number;
 
+  private waitTimeOverEmitted: { [lunchPickerId: number]: boolean } = {};
+
   ngOnInit(): void {
+    this.setRemainingWaitTime();
     this.resolverInterval = setInterval(() => {
-      this.remainingWaitTimeSubject.next(this.getRemainingWaitTime());
+      this.setRemainingWaitTime();
     }, 1000);
   }
 
@@ -31,12 +34,19 @@ export class RemainingWaitTime implements OnInit, OnDestroy {
     clearInterval(this.resolverInterval);
   }
 
-  private getRemainingWaitTime() {
+  private setRemainingWaitTime(): void {
+    this.remainingWaitTimeSubject.next(this.getRemainingWaitTime());
+  }
+
+  private getRemainingWaitTime(): string {
     const waitTimeEnd = new Date(this.lunchPicker.waitTimeEnd).getTime() / 1000;
     const now = new Date().getTime() / 1000;
     if (now >= waitTimeEnd) {
-      this.waitTimeOver.emit();
-      return '';
+      if (!this.waitTimeOverEmitted[this.lunchPicker.id]) {
+        this.waitTimeOver.emit();
+        this.waitTimeOverEmitted[this.lunchPicker.id] = true;
+      }
+      return '00 : 00';
     }
     const remaining = waitTimeEnd - now;
     const seconds = Math.floor(remaining % 60);

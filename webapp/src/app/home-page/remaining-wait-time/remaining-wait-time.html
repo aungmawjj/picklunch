@@ -1,12 +1,10 @@
-@if (remainingWaitTime$ | async; as remainingWaitTime) {
-
 <div style="text-align: end">
   <div style="font: var(--mat-sys-label-medium); color: var(--mat-sys-outline)">
     Remaining Wait Time
   </div>
   <div style="font: var(--mat-sys-title-large)">
+    @if (remainingWaitTime$ | async; as remainingWaitTime) {
     {{ remainingWaitTime }}
+    } @else { ... }
   </div>
 </div>
-
-}

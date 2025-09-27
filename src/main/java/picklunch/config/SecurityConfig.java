@@ -26,12 +26,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests((requests) -> requests
                         // apart from health endpoint, all endpoints including swagger-ui requires login
-                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/health", "/login*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
                         .loginPage("/login") // required for custom login page
-                        .permitAll()
                 )
                 .logout((logout) -> logout
                         // to handle logout from angular via AJAX call

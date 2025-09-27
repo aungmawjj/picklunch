@@ -1,20 +1,20 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { HistoryDetailsPage } from './history-details-page';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 
-describe('App', () => {
+describe('HistoryDetailsPage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [HistoryDetailsPage],
       providers: [provideZonelessChangeDetection(), provideHttpClient(), provideRouter([])],
     }).compileComponents();
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+  it('should create', () => {
+    const fixture = TestBed.createComponent(HistoryDetailsPage);
+    const component = fixture.componentInstance;
+    expect(component).toBeTruthy();
   });
 });

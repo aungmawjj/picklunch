@@ -4,27 +4,41 @@
     <span class="title">Pick Lunch</span>
   </a>
   <span class="spacer"></span>
-  <button matButton="text">
+  <a
+    routerLink="/history"
+    routerLinkActive
+    #rla="routerLinkActive"
+    [matButton]="rla.isActive ? 'filled' : 'text'"
+  >
     <mat-icon>history</mat-icon>
     History
-  </button>
+  </a>
 
   @if(user$ | async; as user) {
   <span class="title-medium user-display-name">{{ user.displayName }}</span>
+  }
 
   <button class="user-button" matIconButton [matMenuTriggerFor]="menu" aria-label="User">
     <mat-icon>person</mat-icon>
   </button>
 
   <mat-menu #menu="matMenu">
-    <div class="menu-content">
+    @if(user$ | async; as user) {
+    <div class="user-details">
       <span class="title-large">{{ user.displayName }}</span>
-      <span class="label-large-outline">{{ user.username }}</span>
-      <button matButton="text" (click)="onClickLogout()">
-        <mat-icon>logout</mat-icon>
-        Logout
-      </button>
+      <span class="label-large-outline" style="margin-bottom: 24px">{{ user.username }}</span>
     </div>
+
+    <button mat-menu-item (click)="onClickLogout()">
+      <mat-icon>logout</mat-icon>
+      Logout
+    </button>
+
+    <mat-divider></mat-divider>
+    }
+    <a mat-menu-item href="/swagger-ui/index.html" target="_blank" style="width: 100%">
+      <mat-icon>data_object</mat-icon>
+      API
+    </a>
   </mat-menu>
-  }
 </mat-toolbar>

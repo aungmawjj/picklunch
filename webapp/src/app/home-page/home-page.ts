@@ -10,12 +10,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { DataService } from '../data-service';
+import { SharedDataService } from '../shared-data-service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { RemainingWaitTime } from './remaining-wait-time/remaining-wait-time';
 import { LunchPickerDetatils } from '../lunch-picker-details/lunch-picker-details';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
+import { Loading } from '../loading/loading';
 
 const snackBarConfig: MatSnackBarConfig = {
   horizontalPosition: 'end',
@@ -37,38 +38,39 @@ const snackBarConfig: MatSnackBarConfig = {
     MatDividerModule,
     RemainingWaitTime,
     LunchPickerDetatils,
+    Loading,
   ],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
 export class HomePage implements OnInit, OnDestroy {
-  private readonly currentPickerSubject = new BehaviorSubject<LunchPicker | null>(null);
-  public readonly currentPicker$ = this.currentPickerSubject.asObservable();
+  private readonly lunchPickerSubject = new BehaviorSubject<LunchPicker | null>(null);
+  readonly lunchPicker$ = this.lunchPickerSubject.asObservable();
 
   private readonly restartFlagSubject = new BehaviorSubject<boolean>(false);
-  public readonly restartFlag$ = this.restartFlagSubject.asObservable();
+  readonly restartFlag$ = this.restartFlagSubject.asObservable();
+
+  private readonly loadingFlagSubject = new BehaviorSubject<boolean>(true);
+  readonly loadingFlag$ = this.loadingFlagSubject.asObservable();
 
   private autoRefreshInterval?: number;
 
   waitTimeOptions = [
-    { value: 'PT10S', label: '10 Seconds' }, // to test
     { value: 'PT10M', label: '10 Minutes' },
     { value: 'PT30M', label: '30 Minutes' },
     { value: 'PT1H', label: '1 Hour' },
+    { value: 'PT10S', label: '10 Seconds [ TEST ]' },
   ];
 
   startForm = {
     waitTime: this.waitTimeOptions[0].value,
   };
 
-  optionForm = {
-    shopName: undefined,
-    shopUrl: undefined,
-  };
+  optionForm: { shopName?: string; shopUrl?: string } = {};
 
   constructor(
     private readonly apiService: ApiService,
-    private readonly dataService: DataService,
+    private readonly dataService: SharedDataService,
     private readonly snackBar: MatSnackBar
   ) {}
 
@@ -84,35 +86,46 @@ export class HomePage implements OnInit, OnDestroy {
     this.snackBar.ngOnDestroy();
   }
 
-  fetchLatestLunchPicker() {
+  fetchLatestLunchPicker(): void {
+    this.setLoadingFlag(true);
     this.apiService.getLunchPickers({ size: 1 }).subscribe({
       next: (resp) => {
-        if (resp.content.length == 0) return;
-        this.setCurrentPicker(resp.content[0]);
-        this.currentPickerSubject.next(resp.content[0]);
+        this.setLoadingFlag(false);
+        if (resp.content.length > 0) {
+          this.setCurrentPicker(resp.content[0]);
+        }
+      },
+      error: (err) => {
+        this.setLoadingFlag(false);
       },
     });
   }
 
-  private setCurrentPicker(picker: LunchPicker) {
-    this.currentPickerSubject.next(picker);
+  showStartForm(
+    loadingFlag: boolean | null,
+    restartFlag: boolean | null,
+    lunchPicker: LunchPicker | null
+  ): boolean {
+    return !loadingFlag && (restartFlag || !lunchPicker);
   }
 
-  myOption(picker: LunchPicker) {
+  showSubmitOptionForm(lunchPicker: LunchPicker): boolean {
+    if (lunchPicker.state == 'PICKED') {
+      return false;
+    }
     const user = this.dataService.getUser();
-    const myOption = picker?.lunchOptions?.find(
+    const myOption = lunchPicker?.lunchOptions?.find(
       (option) => option.submitter.username == user?.username
     );
-    console.info('myOption:', myOption?.shopName);
-    return myOption;
+    return !myOption;
   }
 
-  canPick(picker: LunchPicker) {
+  canPick(picker: LunchPicker): boolean {
     const user = this.dataService.getUser();
     return user?.username == picker?.firstSubmittedUsername;
   }
 
-  onStartPicker() {
+  onStartPicker(): void {
     this.apiService.createLunchPicker(this.startForm).subscribe({
       next: (resp) => {
         this.setCurrentPicker(resp);
@@ -124,11 +137,11 @@ export class HomePage implements OnInit, OnDestroy {
     });
   }
 
-  onSubmitOptioin() {
+  onSubmitOption(): void {
     const shopName = this.optionForm.shopName!;
     const shopUrl = this.optionForm.shopUrl;
 
-    const lunchPickerId = this.currentPickerSubject.getValue()?.id;
+    const lunchPickerId = this.lunchPickerSubject.getValue()?.id;
     if (!lunchPickerId) {
       console.error('Something is wrong, missing current lunch picker id');
       return;
@@ -137,6 +150,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.apiService.submitLunchOption({ lunchPickerId, shopName, shopUrl }).subscribe({
       next: (resp) => {
         this.setCurrentPicker(resp);
+        this.optionForm = {};
         console.info('submitted option', resp);
         this.snackBar.open('Submitted lunch option!', 'Ok', snackBarConfig);
       },
@@ -144,8 +158,8 @@ export class HomePage implements OnInit, OnDestroy {
     });
   }
 
-  onClickPick() {
-    const lunchPickerId = this.currentPickerSubject.getValue()?.id;
+  onClickPick(): void {
+    const lunchPickerId = this.lunchPickerSubject.getValue()?.id;
 
     if (!lunchPickerId) {
       console.error('something is wrong, missing current lunch picker id');
@@ -162,15 +176,23 @@ export class HomePage implements OnInit, OnDestroy {
     });
   }
 
-  onClickRestart() {
+  onClickRestart(): void {
     this.setRestartFlag(true);
   }
 
-  onClickCancelReStart() {
+  onClickCancelReStart(): void {
     this.setRestartFlag(false);
   }
 
-  private setRestartFlag(flag: boolean) {
+  private setCurrentPicker(picker: LunchPicker): void {
+    this.lunchPickerSubject.next(picker);
+  }
+
+  private setRestartFlag(flag: boolean): void {
     this.restartFlagSubject.next(flag);
+  }
+
+  private setLoadingFlag(flag: boolean): void {
+    this.loadingFlagSubject.next(flag);
   }
 }

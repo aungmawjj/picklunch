@@ -1,0 +1,38 @@
+<div class="page-root">
+  <div class="page-content">
+    @if (pagedLunchPickers$ | async; as pagedLunchPickers) {
+    <table mat-table [dataSource]="pagedLunchPickers.content">
+      <ng-container matColumnDef="startTime">
+        <th mat-header-cell *matHeaderCellDef>Start Time</th>
+        <td mat-cell *matCellDef="let lunchPicker">
+          <a [routerLink]="['/history', lunchPicker.id]">
+            {{ lunchPicker.startTime | date : 'LLL dd h a' }}
+          </a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="pickedLunchOption">
+        <th mat-header-cell *matHeaderCellDef>Picked Option</th>
+        <td mat-cell *matCellDef="let lunchPicker">
+          {{ lunchPicker.pickedLunchOption?.shopName || '...' }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <br />
+
+    <mat-paginator
+      [length]="pagedLunchPickers.page.totalElements"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      aria-label="Select Page"
+      showFirstLastButtons
+      (page)="onPageEvent($event)"
+    />
+    }
+  </div>
+</div>

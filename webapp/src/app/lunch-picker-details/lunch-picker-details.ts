@@ -32,7 +32,7 @@ export class LunchPickerDetatils {
   @Input({ required: true })
   lunchPicker!: LunchPicker;
 
-  hasOptions() {
-    return this.lunchPicker.lunchOptions && this.lunchPicker.lunchOptions.length > 0;
+  hasOptions(): boolean {
+    return !!this.lunchPicker.lunchOptions && this.lunchPicker.lunchOptions.length > 0;
   }
 }

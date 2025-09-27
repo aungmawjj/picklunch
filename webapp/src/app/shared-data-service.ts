@@ -5,16 +5,16 @@ import { User } from './types';
 @Injectable({
   providedIn: 'root',
 })
-export class DataService {
+export class SharedDataService {
   private readonly userSubject = new BehaviorSubject<User | null>(null);
 
   public readonly user$ = this.userSubject.asObservable();
 
-  public setUser(user: User) {
+  public setUser(user: User): void {
     return this.userSubject.next(user);
   }
 
-  public getUser() {
+  public getUser(): User | null {
     return this.userSubject.getValue();
   }
 }

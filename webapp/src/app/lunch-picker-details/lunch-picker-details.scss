@@ -1,3 +1,13 @@
+@use '@angular/material' as mat;
+
+:host {
+  @include mat.expansion-overrides(
+    (
+      container-background-color: var(--mat-sys-surface-container-low),
+    )
+  );
+}
+
 .picked-option {
   border: 1px solid var(--mat-sys-outline-variant);
   background-color: var(--mat-sys-surface-container-lowest);
