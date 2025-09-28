@@ -4,17 +4,22 @@ RUN mkdir -p /opt/picklunch
 COPY webapp /opt/picklunch/webapp
 
 WORKDIR /opt/picklunch/webapp
-RUN pwd && ls -lrt
+RUN pwd && ls -la
 RUN npm install
 RUN npm run build
 
 # Build spring boot 
 FROM eclipse-temurin:25_36-jdk-alpine-3.22 AS build-java
 RUN mkdir -p /opt/picklunch
-COPY . /opt/picklunch/
-
 WORKDIR /opt/picklunch
-RUN pwd && ls -lrt
+COPY .mvn /opt/picklunch/.mvn
+COPY mvnw /opt/picklunch/
+COPY pom.xml /opt/picklunch/
+RUN pwd && ls -la
+# Cache maven dependencies in docker layer
+RUN ./mvnw verify --fail-never
+COPY . /opt/picklunch/
+RUN pwd && ls -la
 RUN ./mvnw clean package
 
 # Runtime
