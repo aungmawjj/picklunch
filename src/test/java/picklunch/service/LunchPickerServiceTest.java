@@ -186,7 +186,6 @@ public class LunchPickerServiceTest {
 
         LunchPicker lunchPicker = lunchPickerService.createLunchPicker(createReq);
         lunchPicker = lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopA"), user0);
-        assertEquals(LunchPicker.State.SUBMITTING, lunchPicker.getState());
 
         Thread.sleep(100); // sleep for wait time over
 

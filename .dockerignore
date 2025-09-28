@@ -5,3 +5,6 @@
 .idea
 .run
 target/
+
+docker-compose
+.github
