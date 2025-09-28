@@ -42,8 +42,8 @@ This project can be build and run by using Docker or directly using Node.js and 
 
 Make sure `docker` is available on your computer.
 
+Run the app
 ```bash
-# run the app
 docker run --name picklunch -p 8080:8080 aungmaw/picklunch
 ```
 
@@ -73,11 +73,13 @@ You can access the web app at http://localhost:8080.
 
 You can also start the app with postgres database. In that case the app data will not be lost across restarts.
 
+Start the app
 ```bash
-# start the app
 docker compose up -d
+```
 
-# to stop
+To stop
+```bash
 docker compose down
 ```
 
@@ -87,11 +89,13 @@ Make sure `Node.js` (^20.19.0 || ^22.12.0 || ^24.0.0) and `Java` (^17) is availa
 
 Build spring boot
 
+On unix
 ```bash
-# on unix
 ./mvnw clean package
+```
 
-# on windows
+On windows
+```bash
 mvnw.cmd clean package
 ```
 
