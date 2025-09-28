@@ -115,7 +115,7 @@ export class HomePage implements OnInit, OnDestroy {
     }
     const user = this.dataService.getUser();
     const myOption = lunchPicker?.lunchOptions?.find(
-      (option) => option.submitter.username == user?.username
+      (option) => option.submittedUsername == user?.username
     );
     return !myOption;
   }

@@ -22,20 +22,15 @@ import java.time.ZonedDateTime;
 public class LunchOption {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     // having separate field to decouple from audit field
     @Column(name = "submitted_username", nullable = false)
     private String submittedUsername;
 
-    @OneToOne
-    @JoinColumn(
-            name = "submitted_username",
-            referencedColumnName = "username",
-            insertable = false,
-            updatable = false
-    )
+    // cannot have foreign key constraint since users will be loaded on every restart
+    @Transient
     private User submitter;
 
     @Column(nullable = false)

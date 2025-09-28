@@ -1,0 +1,9 @@
+
+# Using on memory H2 database
+services:
+  picklunch:
+    image: aungmaw/picklunch
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: "debug"

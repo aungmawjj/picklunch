@@ -17,6 +17,7 @@ WORKDIR /opt/picklunch
 RUN pwd && ls -lrt
 RUN ./mvnw clean package
 
+# Runtime
 FROM eclipse-temurin:25_36-jre-alpine-3.22 
 RUN mkdir -p /opt/picklunch
 COPY --from=build-js /opt/picklunch/webapp/dist/webapp/browser /opt/picklunch/webapp
@@ -25,7 +26,7 @@ COPY users.csv /opt/picklunch/
 
 WORKDIR /opt/picklunch
 RUN pwd && ls -lrt
-ENV PL_WEBAPP_STATIC_DIR=/opt/picklunch/webapp
+ENV PICKLUNCH_WEBAPP_STATIC_DIR=/opt/picklunch/webapp
 EXPOSE 8080
 
 ENTRYPOINT [ "java", "-jar", "picklunch.jar" ]

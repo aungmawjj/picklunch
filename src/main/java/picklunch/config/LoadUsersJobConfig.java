@@ -1,5 +1,6 @@
 package picklunch.config;
 
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import picklunch.model.entity.User;
 import picklunch.repository.UserRepo;
 import org.springframework.batch.core.Job;
@@ -36,6 +37,8 @@ public class LoadUsersJobConfig {
     @Bean
     public Job loadUsersJob(JobRepository jobRepository, Step loadUsersStep, Step deleteAllUsersStep) {
         return new JobBuilder("loadUsersJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .preventRestart()
                 .start(deleteAllUsersStep)
                 .next(loadUsersStep)
                 .build();
@@ -50,7 +53,7 @@ public class LoadUsersJobConfig {
 
     private Tasklet deleteAllUsersTasklet() {
         return (unused_1, unused_2) -> {
-            userRepo.deleteAll();
+            userRepo.deleteAllInBatch();
             return RepeatStatus.FINISHED;
         };
     }
@@ -74,6 +77,7 @@ public class LoadUsersJobConfig {
                         FIELD_DISPLAY_NAME,
                         FIELD_ENCODED_PASSWORD
                 })
+                .linesToSkip(1) // skip header line
                 .fieldSetMapper(fieldSet -> User.builder()
                         .username(fieldSet.readString(FIELD_USERNAME))
                         .displayName(fieldSet.readString(FIELD_DISPLAY_NAME))

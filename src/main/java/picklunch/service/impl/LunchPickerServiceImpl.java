@@ -16,37 +16,38 @@ import picklunch.model.PickLunchOptionRequest;
 import picklunch.model.SubmitLunchOptionRequest;
 import picklunch.model.entity.LunchOption;
 import picklunch.model.entity.LunchPicker;
+import picklunch.model.entity.User;
 import picklunch.repository.LunchPickerRepo;
 import picklunch.repository.UserRepo;
 import picklunch.service.LunchPickerService;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class LunchPickerServiceImpl implements LunchPickerService {
 
+    private final Random random = new Random();
     @Autowired
     LunchPickerRepo lunchPickerRepo;
-
     @Autowired
     UserRepo userRepo;
-
     @Value("${picklunch.picker.wait-time}")
     Duration defaultWaitTime;
-
-    private final Random random = new Random();
 
     @Override
     @Transactional(readOnly = true)
     public Page<LunchPicker> getLunchPickers(Pageable pageable) {
         Page<LunchPicker> lunchPickers = lunchPickerRepo.findAll(pageable);
-        // for the ui to display the state and conditional actions
+        // for ui to display the state and conditional actions
         // update state only for the response, no write action to database
-        lunchPickers.forEach(this::updateStateIfWaitTimeOverWithSomeOptions);
+        lunchPickers.forEach(lunchPicker -> {
+            updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
+            fetchUsers(lunchPicker);
+        });
         return lunchPickers;
     }
 
@@ -54,7 +55,8 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     @Transactional(readOnly = true)
     public LunchPicker getLunchPickerById(Long id) {
         LunchPicker lunchPicker = getLunchPickerByIdOrElseThrow(id);
-        this.updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
+        updateStateIfWaitTimeOverWithSomeOptions(lunchPicker);
+        fetchUsers(lunchPicker);
         return lunchPicker;
     }
 
@@ -92,7 +94,6 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
             lunchPicker.setLunchOptions(new ArrayList<>());
             lunchPicker.setFirstSubmittedUsername(username);
-            lunchPicker.setFirstSubmitter(lunchOption.getSubmitter());
         }
         lunchPicker.getLunchOptions().add(lunchOption);
 
@@ -100,6 +101,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
             lunchPicker.setState(LunchPicker.State.READY_TO_PICK);
         }
         lunchPicker = lunchPickerRepo.save(lunchPicker);
+        fetchUsers(lunchPicker);
         log.info("Submitted lunch option, picker_state={}", lunchPicker.getState());
         return lunchPicker;
     }
@@ -123,6 +125,7 @@ public class LunchPickerServiceImpl implements LunchPickerService {
 
         lunchPicker = lunchPickerRepo.save(lunchPicker);
 
+        fetchUsers(lunchPicker);
         LunchOption picked = lunchPicker.getPickedLunchOption();
         log.info("Picked lunch option, shopName={} picker_id={} picker_state={}",
                 picked.getShopName(), lunchPicker.getId(), lunchPicker.getState());
@@ -174,7 +177,6 @@ public class LunchPickerServiceImpl implements LunchPickerService {
     private LunchOption createLunchOption(SubmitLunchOptionRequest request, String username) {
         return LunchOption.builder()
                 .submittedUsername(username)
-                .submitter(userRepo.findByUsername(username))
                 .shopName(request.getShopName())
                 .shopUrl(request.getShopUrl())
                 .build();
@@ -189,6 +191,21 @@ public class LunchPickerServiceImpl implements LunchPickerService {
         if (isStateSubmitting(lunchPicker) && isWaitTimeOver(lunchPicker) && hasOptions(lunchPicker)) {
             lunchPicker.setState(LunchPicker.State.READY_TO_PICK);
         }
+    }
+
+    private void fetchUsers(LunchPicker lunchPicker) {
+        if (CollectionUtils.isEmpty(lunchPicker.getLunchOptions())) {
+            return;
+        }
+        Set<String> usernames = lunchPicker.getLunchOptions().stream()
+                .map(LunchOption::getSubmittedUsername).collect(Collectors.toSet());
+        List<User> users = userRepo.findAllByUsernameIn(usernames);
+        Map<String, User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getUsername, user -> user));
+
+        lunchPicker.setFirstSubmitter(userMap.getOrDefault(lunchPicker.getFirstSubmittedUsername(), null));
+        lunchPicker.getLunchOptions().forEach(option ->
+                option.setSubmitter(userMap.getOrDefault(option.getSubmittedUsername(), null)));
     }
 
     private boolean isStateSubmitting(LunchPicker lunchPicker) {

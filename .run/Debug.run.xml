@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Dev" type="Application" factoryName="Application">
+  <configuration default="false" name="Debug" type="Application" factoryName="Application">
     <envs>
-      <env name="SPRING_PROFILES_ACTIVE" value="dev" />
+      <env name="SPRING_PROFILES_ACTIVE" value="debug" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="picklunch.PicklunchApplication" />
     <module name="picklunch" />

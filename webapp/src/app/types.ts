@@ -5,7 +5,8 @@ export interface User {
 
 export interface LunchOption {
   id: number;
-  submitter: User;
+  submittedUsername: string;
+  submitter?: User;
   shopName: string;
   shopUrl?: string;
 }
@@ -14,11 +15,11 @@ export interface LunchPicker {
   id: number;
   state: 'SUBMITTING' | 'READY_TO_PICK' | 'PICKED';
   lunchOptions?: LunchOption[];
-  firstSubmitter?: User;
   startTime: string;
   waitTimeEnd: string;
   waitTime: string;
-  firstSubmittedUsername: string;
+  firstSubmittedUsername?: string;
+  firstSubmitter?: User;
   pickedLunchOption: LunchOption;
 }
 

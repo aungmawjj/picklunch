@@ -1,0 +1,33 @@
+
+# Using postgres and external user file
+services:
+  picklunch:
+    image: aungmaw/picklunch
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_PROFILES_ACTIVE: "debug"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/picklunch"
+      SPRING_DATASOURCE_PASSWORD: "postgres"
+      SPRING_DATASOURCE_USERNAME: "postgres"
+      SPRING_JPA_HIBERNATE_DDLAUTO: "update"
+      SPRING_BATCH_JDBC_INITIALIZESCHEMA: "always"
+      PICKLUNCH_USERS_FILE: /opt/picklunch/ext_users.csv # use different user file
+    volumes:
+      - ../users.csv:/opt/picklunch/ext_users.csv # map external user file
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: picklunch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data # Persist database data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pg_data:

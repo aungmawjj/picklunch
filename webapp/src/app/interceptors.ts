@@ -14,7 +14,7 @@ export function unauthorizedResponseInterceptor(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ): Observable<HttpEvent<unknown>> {
-  const alertedUnauthorized = false;
+  let alertedUnauthorized = false;
   const dialog = inject(MatDialog);
 
   return next(req).pipe(
@@ -26,6 +26,7 @@ export function unauthorizedResponseInterceptor(
           console.debug('Already alerted');
           return throwError(() => error);
         }
+        alertedUnauthorized = true;
 
         const dialogRef = dialog.open(AlertDialog, {
           disableClose: true,

@@ -93,6 +93,38 @@ public class LunchPickerServiceTest {
     }
 
     @Test
+    void testResponseIncludeSubmittedUser() {
+        String user0 = usernames.get(0);
+        LunchPicker lunchPicker = createDefaultLunchPicker();
+
+        lunchPicker = lunchPickerService.submitLunchOption(submitRequest(lunchPicker, "ShopA"), user0);
+
+        assertNotNull(lunchPicker.getFirstSubmitter());
+        assertNotNull(lunchPicker.getLunchOptions().get(0).getSubmitter());
+
+        assertNotNull(user0, lunchPicker.getFirstSubmitter().getUsername());
+        assertNotNull(user0, lunchPicker.getLunchOptions().get(0).getSubmitter().getUsername());
+    }
+
+    @Test
+    void testGetNotFailedForNotFoundUser() {
+        // when users are removed
+
+        LunchPicker lunchPicker = createDefaultLunchPicker();
+
+        String username = "not_found_username";
+        lunchPicker = lunchPickerService.submitLunchOption(
+                submitRequest(lunchPicker, "ShopA"), username);
+
+        assertNull(lunchPicker.getFirstSubmitter());
+        assertNull(lunchPicker.getLunchOptions().get(0).getSubmitter());
+
+        assertEquals(username, lunchPicker.getFirstSubmittedUsername());
+        assertEquals(username, lunchPicker.getLunchOptions().get(0).getSubmittedUsername());
+    }
+
+
+    @Test
     void testCannotSubmitMoreThanOnce() {
         String user0 = usernames.get(0);
         LunchPicker lunchPicker = createDefaultLunchPicker();

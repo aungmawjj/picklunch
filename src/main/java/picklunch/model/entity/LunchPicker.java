@@ -40,13 +40,8 @@ public class LunchPicker {
     @Column(name = "first_submitted_username")
     private String firstSubmittedUsername;
 
-    @OneToOne
-    @JoinColumn(
-            name = "first_submitted_username",
-            referencedColumnName = "username",
-            insertable = false,
-            updatable = false
-    )
+    // cannot have foreign key constraint since users will be loaded on every restart
+    @Transient
     private User firstSubmitter;
 
     @OneToOne

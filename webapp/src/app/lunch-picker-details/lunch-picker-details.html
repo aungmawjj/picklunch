@@ -9,7 +9,9 @@
   }
 
   <span class="label-medium-outline"> Submitter </span>
-  <div class="title-medium">{{ pickedOption.submitter.displayName }}</div>
+  <div class="title-medium">
+    {{ pickedOption.submitter?.displayName || pickedOption.submittedUsername }}
+  </div>
 </div>
 
 }
@@ -60,7 +62,9 @@
     }
 
     <span class="label-medium-outline"> Submitter </span>
-    <div class="title-medium">{{ lunchOption.submitter.displayName }}</div>
+    <div class="title-medium">
+      {{ lunchOption.submitter?.displayName || lunchOption.submittedUsername }}
+    </div>
   </mat-expansion-panel>
 
   }
