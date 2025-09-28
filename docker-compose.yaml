@@ -16,7 +16,7 @@ services:
       SPRING_BATCH_JDBC_INITIALIZESCHEMA: "always"
       PICKLUNCH_USERS_FILE: /opt/picklunch/ext_users.csv # use different user file
     volumes:
-      - ../users.csv:/opt/picklunch/ext_users.csv # map external user file
+      - ./users.csv:/opt/picklunch/ext_users.csv # map external user file
 
   postgres:
     image: postgres
