@@ -30,9 +30,9 @@ This mini project solve this problem by developing a web based application.
 
 ## User management
 
-A list of authorized will be loaded to the system on startup from `users.csv` file by default.
+A list of authorized users will be loaded on system startup from `users.csv` file by default.
 The file includes user entries with fields for username, display name and bcrypt encoded password.
-For test purpose, 20 users are available in the default users.csv file using `pw` as password.
+For testing purpose, 20 users are available in the default users.csv file using `pw` as password.
 
 ## Build and Run
 
@@ -108,14 +108,13 @@ npm run build
 ```
 
 Run the app
-
 ```bash
 java -jar target/picklunch-1.0.0.jar
 ```
 
 ## Usage
 
-- When the app is started, any authorized user can start a lunch picker session with a selected wait time.
+- When the app started, any authorized user can start a lunch picker with a selected wait time.
 - After that, all authorized user can submit a lunch option.
 - The first submitter can request to pick a random option
   when all users submitted their options or the wait time is over.
